@@ -7,7 +7,7 @@
         <packaging>war</packaging>
       </options>
     </properties>
-    <root id="archive" name="smx20231722-1.0-SNAPSHOT.war">
+    <root id="archive" name="demo20231722-1.0-SNAPSHOT.war">
       <element id="artifact" artifact-name="smx20231722:war exploded" />
     </root>
   </artifact>
