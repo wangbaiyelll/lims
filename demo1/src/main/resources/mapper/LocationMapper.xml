@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.LocationMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.Location">
+        <id column="id" property="id"/>
+        <result column="library_name" property="libraryName"/>
+        <result column="shelf_no" property="shelfNo"/>
+        <result column="position_code" property="positionCode"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM location WHERE id = #{id}
+    </select>
+
+    <select id="selectByCode" resultMap="BaseResultMap">
+        SELECT * FROM location WHERE position_code = #{positionCode}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM location WHERE status = 1 ORDER BY library_name, shelf_no
+    </select>
+
+    <select id="selectByLibrary" resultMap="BaseResultMap">
+        SELECT * FROM location WHERE library_name = #{libraryName} AND status = 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO location (library_name, shelf_no, position_code, description, status)
+        VALUES (#{libraryName}, #{shelfNo}, #{positionCode}, #{description}, 1)
+    </insert>
+
+    <update id="update">
+        UPDATE location
+        <set>
+            <if test="libraryName != null">library_name = #{libraryName},</if>
+            <if test="shelfNo != null">shelf_no = #{shelfNo},</if>
+            <if test="positionCode != null">position_code = #{positionCode},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE location SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        UPDATE location SET status = 0 WHERE id = #{id}
+    </delete>
+
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.FineMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.Fine">
+        <id column="id" property="id"/>
+        <result column="teacher_id" property="teacherId"/>
+        <result column="borrow_id" property="borrowId"/>
+        <result column="amount" property="amount"/>
+        <result column="fine_date" property="fineDate"/>
+        <result column="due_days" property="dueDays"/>
+        <result column="status" property="status"/>
+        <result column="pay_date" property="payDate"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <resultMap id="WithInfoMap" type="com.example.library.entity.Fine" extends="BaseResultMap">
+        <result column="teacher_name" property="teacherName"/>
+        <result column="book_title" property="bookTitle"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="WithInfoMap">
+        SELECT f.*, t.name as teacher_name, b.title as book_title
+        FROM fine f
+                 LEFT JOIN teacher t ON f.teacher_id = t.id
+                 LEFT JOIN borrow_record br ON f.borrow_id = br.id
+                 LEFT JOIN book b ON br.book_id = b.id
+        WHERE f.id = #{id}
+    </select>
+
+    <select id="selectByTeacherId" resultMap="WithInfoMap">
+        SELECT f.*, t.name as teacher_name, b.title as book_title
+        FROM fine f
+        LEFT JOIN teacher t ON f.teacher_id = t.id
+        LEFT JOIN borrow_record br ON f.borrow_id = br.id
+        LEFT JOIN book b ON br.book_id = b.id
+        WHERE f.teacher_id = #{teacherId}
+        <if test="status != null">
+            AND f.status = #{status}
+        </if>
+        ORDER BY f.fine_date DESC
+    </select>
+
+    <select id="selectByBorrowId" resultMap="BaseResultMap">
+        SELECT * FROM fine WHERE borrow_id = #{borrowId}
+    </select>
+
+    <!-- ... existing code ... -->
+    <select id="selectByCondition" resultMap="WithInfoMap">
+        SELECT f.*, t.name as teacher_name, b.title as book_title
+        FROM fine f
+        LEFT JOIN teacher t ON f.teacher_id = t.id
+        LEFT JOIN borrow_record br ON f.borrow_id = br.id
+        LEFT JOIN book b ON br.book_id = b.id
+        <where>
+            <if test="teacherName != null and teacherName != ''">
+                AND t.name LIKE CONCAT('%', #{teacherName}, '%')
+            </if>
+            <if test="status != null">
+                AND f.status = #{status}
+            </if>
+        </where>
+        ORDER BY f.fine_date DESC
+    </select>
+    <!-- ... existing code ... -->
+
+
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM fine f
+        LEFT JOIN teacher t ON f.teacher_id = t.id
+        <where>
+            <if test="teacherName != null and teacherName != ''">
+                AND t.name LIKE CONCAT('%', #{teacherName}, '%')
+            </if>
+            <if test="status != null">
+                AND f.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO fine (teacher_id, borrow_id, amount, fine_date, due_days, status, remark)
+        VALUES (#{teacherId}, #{borrowId}, #{amount}, #{fineDate}, #{dueDays}, 0, #{remark})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE fine SET status = #{status}, pay_date = #{payDate} WHERE id = #{id}
+    </update>
+
+</mapper>

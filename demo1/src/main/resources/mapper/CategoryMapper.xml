@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.CategoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.Category">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="level" property="level"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM category WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM category ORDER BY sort_order, id
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT * FROM category WHERE parent_id = #{parentId} ORDER BY sort_order
+    </select>
+
+    <select id="selectLevel1" resultMap="BaseResultMap">
+        SELECT * FROM category WHERE parent_id = 0 ORDER BY sort_order
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO category (parent_id, name, level, sort_order)
+        VALUES (#{parentId}, #{name}, #{level}, #{sortOrder})
+    </insert>
+
+    <update id="update">
+        UPDATE category
+        <set>
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="level != null">level = #{level},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM category WHERE id = #{id}
+    </delete>
+
+    <select id="countChildren" resultType="int">
+        SELECT COUNT(*) FROM category WHERE parent_id = #{parentId}
+    </select>
+
+    <select id="countBooks" resultType="int">
+        SELECT COUNT(*) FROM book WHERE category_id = #{categoryId} AND status = 1
+    </select>
+
+</mapper>

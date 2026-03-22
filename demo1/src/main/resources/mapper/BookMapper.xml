@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.BookMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.Book">
+        <id column="id" property="id"/>
+        <result column="isbn" property="isbn"/>
+        <result column="title" property="title"/>
+        <result column="author" property="author"/>
+        <result column="publisher" property="publisher"/>
+        <result column="publish_date" property="publishDate"/>
+        <result column="price" property="price"/>
+        <result column="summary" property="summary"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <resultMap id="WithStockMap" type="com.example.library.entity.Book" extends="BaseResultMap">
+        <result column="category_name" property="categoryName"/>
+        <result column="available_qty" property="availableQty"/>
+        <result column="total_qty" property="totalQty"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="WithStockMap">
+        SELECT b.*, c.name as category_name,
+               COALESCE(SUM(s.available_qty), 0) as available_qty,
+               COALESCE(SUM(s.total_qty), 0) as total_qty
+        FROM book b
+                 LEFT JOIN category c ON b.category_id = c.id
+                 LEFT JOIN stock s ON b.id = s.book_id
+        WHERE b.id = #{id}
+        GROUP BY b.id
+    </select>
+
+    <select id="selectByIsbn" resultMap="BaseResultMap">
+        SELECT * FROM book WHERE isbn = #{isbn}
+    </select>
+
+    <!-- ... existing code ... -->
+    <select id="selectByCondition" resultMap="WithStockMap">
+        SELECT b.*, c.name as category_name,
+        COALESCE(SUM(s.available_qty), 0) as available_qty,
+        COALESCE(SUM(s.total_qty), 0) as total_qty
+        FROM book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN stock s ON b.id = s.book_id
+        <where>
+            b.status = 1
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+            <if test="title != null and title != ''">
+                AND b.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="author != null and author != ''">
+                AND b.author LIKE CONCAT('%', #{author}, '%')
+            </if>
+            <if test="isbn != null and isbn != ''">
+                AND b.isbn LIKE CONCAT('%', #{isbn}, '%')
+            </if>
+            <if test="categoryId != null and categoryId != 0">
+                AND b.category_id = #{categoryId}
+            </if>
+        </where>
+        GROUP BY b.id
+        ORDER BY b.id DESC
+    </select>
+
+    <select id="selectPopular" resultMap="WithStockMap">
+        SELECT b.*, c.name as category_name,
+               COUNT(br.id) as borrow_count
+        FROM book b
+                 LEFT JOIN category c ON b.category_id = c.id
+                 LEFT JOIN borrow_record br ON b.id = br.book_id
+        WHERE b.status = 1
+        GROUP BY b.id
+        ORDER BY borrow_count DESC
+    </select>
+
+    <select id="selectRecommendByTeacher" resultMap="WithStockMap">
+        SELECT b.*, c.name as category_name,
+               '基于借阅历史推荐' as recommend_reason
+        FROM book b
+                 LEFT JOIN category c ON b.category_id = c.id
+        WHERE b.status = 1
+          AND b.category_id IN (
+            SELECT DISTINCT category_id
+            FROM borrow_record br
+                     JOIN book bk ON br.book_id = bk.id
+            WHERE br.teacher_id = #{teacherId}
+        )
+          AND b.id NOT IN (
+            SELECT book_id FROM borrow_record WHERE teacher_id = #{teacherId}
+        )
+    </select>
+    <!-- ... existing code ... -->
+
+
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(DISTINCT b.id)
+        FROM book b
+        <where>
+            b.status = 1
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+            <if test="title != null and title != ''">
+                AND b.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="author != null and author != ''">
+                AND b.author LIKE CONCAT('%', #{author}, '%')
+            </if>
+            <if test="isbn != null and isbn != ''">
+                AND b.isbn LIKE CONCAT('%', #{isbn}, '%')
+            </if>
+            <if test="categoryId != null and categoryId != 0">
+                AND b.category_id = #{categoryId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO book (isbn, title, author, publisher, publish_date, price, summary, category_id, status)
+        VALUES (#{isbn}, #{title}, #{author}, #{publisher}, #{publishDate}, #{price}, #{summary}, #{categoryId}, 1)
+    </insert>
+
+    <update id="update">
+        UPDATE book
+        <set>
+            <if test="isbn != null">isbn = #{isbn},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="author != null">author = #{author},</if>
+            <if test="publisher != null">publisher = #{publisher},</if>
+            <if test="publishDate != null">publish_date = #{publishDate},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE book SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        UPDATE book SET status = 0 WHERE id = #{id}
+    </delete>
+
+
+
+</mapper>

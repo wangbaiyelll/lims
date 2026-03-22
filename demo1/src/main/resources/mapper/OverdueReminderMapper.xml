@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.OverdueReminderMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.OverdueReminder">
+        <id column="id" property="id"/>
+        <result column="teacher_id" property="teacherId"/>
+        <result column="borrow_id" property="borrowId"/>
+        <result column="overdue_days" property="overdueDays"/>
+        <result column="reminder_date" property="reminderDate"/>
+        <result column="send_status" property="sendStatus"/>
+    </resultMap>
+
+    <select id="selectByBorrowId" resultMap="BaseResultMap">
+        SELECT * FROM overdue_reminder WHERE borrow_id = #{borrowId} ORDER BY reminder_date DESC LIMIT 1
+    </select>
+
+    <select id="selectUnsent" resultMap="BaseResultMap">
+        SELECT * FROM overdue_reminder WHERE send_status = 0
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO overdue_reminder (teacher_id, borrow_id, overdue_days, reminder_date, send_status)
+        VALUES (#{teacherId}, #{borrowId}, #{overdueDays}, NOW(), 0)
+    </insert>
+
+    <update id="updateSendStatus">
+        UPDATE overdue_reminder SET send_status = #{sendStatus} WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.AdminLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.AdminLog">
+        <id column="id" property="id"/>
+        <result column="admin_id" property="adminId"/>
+        <result column="admin_name" property="adminName"/>
+        <result column="operation" property="operation"/>
+        <result column="target_type" property="targetType"/>
+        <result column="target_id" property="targetId"/>
+        <result column="target_name" property="targetName"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectByAdminId" resultMap="BaseResultMap">
+        SELECT * FROM admin_log
+        WHERE admin_id = #{adminId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByTarget" resultMap="BaseResultMap">
+        SELECT * FROM admin_log
+        WHERE target_type = #{targetType} AND target_id = #{targetId}
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO admin_log (admin_id, admin_name, operation, target_type, target_id, target_name)
+        VALUES (#{adminId}, #{adminName}, #{operation}, #{targetType}, #{targetId}, #{targetName})
+    </insert>
+
+</mapper>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.TeacherMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.Teacher">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="emp_no" property="empNo"/>
+        <result column="name" property="name"/>
+        <result column="college" property="college"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="hire_date" property="hireDate"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM teacher WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT * FROM teacher WHERE username = #{username}
+    </select>
+
+    <select id="selectByEmpNo" resultMap="BaseResultMap">
+        SELECT * FROM teacher WHERE emp_no = #{empNo}
+    </select>
+
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT * FROM teacher
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%')
+                OR emp_no LIKE CONCAT('%', #{keyword}, '%')
+                OR username LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="college != null and college != ''">
+                AND college = #{college}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*) FROM teacher
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%')
+                OR emp_no LIKE CONCAT('%', #{keyword}, '%')
+                OR username LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="college != null and college != ''">
+                AND college = #{college}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO teacher (username, password, emp_no, name, college, phone, email, hire_date, status)
+        VALUES (#{username}, #{password}, #{empNo}, #{name}, #{college}, #{phone}, #{email}, #{hireDate}, #{status})
+    </insert>
+
+    <update id="update">
+        UPDATE teacher
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="empNo != null">emp_no = #{empNo},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="college != null">college = #{college},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="hireDate != null">hire_date = #{hireDate},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE teacher SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE teacher SET password = #{password} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        UPDATE teacher SET status = 0 WHERE id = #{id}
+    </delete>
+
+</mapper>
