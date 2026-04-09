@@ -5,12 +5,15 @@ import java.util.Date;
 
 @Data
 public class Admin {
-    private Integer id;
+    private Long id;
+    private String name;
     private String username;
     private String password;
-    private String realName;
-    private String role;
+    private Integer roleId;
+    private Date createTime;
     private Integer status;
     private Date lastLoginTime;
-    private Date createTime;
+    
+    // 关联角色信息（非数据库字段）
+    private String roleName;
 }

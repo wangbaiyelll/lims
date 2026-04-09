@@ -21,11 +21,12 @@ public class StockController {
     @GetMapping("/list")
     @ResponseBody
     public Result getStockList(@RequestParam(defaultValue = "1") Integer page,
-                               @RequestParam(defaultValue = "10") Integer limit) {
-        PageHelper.startPage(page, limit);
-        List<Stock> list = stockService.getAll(page, limit);
-        PageInfo<Stock> pageInfo = new PageInfo<>(list);
-        return Result.success().put("data", pageInfo.getList()).put("count", pageInfo.getTotal());
+                      @RequestParam(defaultValue = "10") Integer limit,
+                      @RequestParam(required = false) String bookTitle) {
+        // 移除PageHelper.startPage调用，因为Service层已经处理了分页
+        List<Stock> list = stockService.getAll(page, limit, bookTitle);
+        // 使用Service层返回的数据直接构建响应
+        return Result.success().put("data", list).put("count", stockService.getCount(bookTitle));
     }
 
     @GetMapping("/book/{bookId}")

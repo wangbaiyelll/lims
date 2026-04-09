@@ -44,8 +44,7 @@
                 AND status = #{status}
             </if>
         </where>
-        ORDER BY id DESC
-        LIMIT #{offset}, #{limit}
+        ORDER BY id ASC
     </select>
 
     <select id="countByCondition" resultType="int">

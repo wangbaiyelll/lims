@@ -33,13 +33,23 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public List<Stock> getAll(Integer page, Integer size) {
+        return getAll(page, size, null);
+    }
+
+    @Override
+    public List<Stock> getAll(Integer page, Integer size, String bookTitle) {
         int offset = (page - 1) * size;
-        return stockMapper.selectAll(offset, size);
+        return stockMapper.selectAll(offset, size, bookTitle);
     }
 
     @Override
     public int getCount() {
-        return stockMapper.countAll();
+        return getCount(null);
+    }
+
+    @Override
+    public int getCount(String bookTitle) {
+        return stockMapper.countAll(bookTitle);
     }
 
     @Override

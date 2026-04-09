@@ -15,9 +15,9 @@ public interface StockMapper {
 
     List<Stock> selectByLocationId(@Param("locationId") Integer locationId);
 
-    List<Stock> selectAll(@Param("offset") Integer offset, @Param("limit") Integer limit);
+    List<Stock> selectAll(@Param("offset") Integer offset, @Param("limit") Integer limit, @Param("bookTitle") String bookTitle);
 
-    int countAll();
+    int countAll(@Param("bookTitle") String bookTitle);
 
     int insert(Stock stock);
 

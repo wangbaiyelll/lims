@@ -13,7 +13,13 @@ public interface StockService {
 
     List<Stock> getAll(Integer page, Integer size);
 
+    // 添加带查询条件的分页查询方法
+    List<Stock> getAll(Integer page, Integer size, String bookTitle);
+
     int getCount();
+
+    // 添加带查询条件的计数方法
+    int getCount(String bookTitle);
 
     boolean add(Stock stock);
 

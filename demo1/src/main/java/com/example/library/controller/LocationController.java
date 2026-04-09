@@ -23,6 +23,20 @@ public class LocationController {
         return Result.success().put("data", list);
     }
 
+    @GetMapping("/getByCode")
+    @ResponseBody
+    public Result getByCode(@RequestParam String code) {
+        try {
+            Location location = locationService.getByCode(code);
+            if (location != null) {
+                return Result.success().put("data", location);
+            }
+            return Result.error("位置编码不存在");
+        } catch (Exception e) {
+            return Result.error("查询失败：" + e.getMessage());
+        }
+    }
+
     @GetMapping("/libraries")
     @ResponseBody
     public Result getLibraries() {

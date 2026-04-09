@@ -40,14 +40,31 @@
         ORDER BY ra.apply_date DESC
     </select>
 
-    <select id="selectByStatus" resultMap="WithInfoMap">
-        SELECT ra.*, t.name as teacher_name, b.title as book_title
-        FROM renew_application ra
-                 LEFT JOIN teacher t ON ra.teacher_id = t.id
-                 LEFT JOIN borrow_record br ON ra.borrow_id = br.id
-                 LEFT JOIN book b ON br.book_id = b.id
-        WHERE ra.status = #{status}
-        ORDER BY ra.apply_date ASC
+    <select id="selectByStatus" resultType="com.example.library.entity.RenewApplication">
+        SELECT * FROM renew_application
+        WHERE status = #{status}
+        ORDER BY apply_date DESC
+    </select>
+
+    <select id="selectByBorrowIdAndStatus" resultType="com.example.library.entity.RenewApplication">
+        SELECT * FROM renew_application
+        WHERE borrow_id = #{borrowId} AND status = #{status}
+        LIMIT 1
+    </select>
+
+    <select id="selectByBorrowId" resultType="com.example.library.entity.RenewApplication">
+        SELECT * FROM renew_application
+        WHERE borrow_id = #{borrowId}
+        ORDER BY CASE WHEN audit_date IS NULL THEN 1 ELSE 0 END, audit_date DESC
+    </select>
+
+    <select id="selectByBorrowIds" resultMap="BaseResultMap">
+        SELECT * FROM renew_application
+        WHERE borrow_id IN
+        <foreach collection="borrowIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY CASE WHEN status = 0 THEN 1 ELSE 0 END, audit_date DESC
     </select>
 
     <select id="selectAll" resultMap="WithInfoMap">
@@ -57,6 +74,28 @@
                  LEFT JOIN borrow_record br ON ra.borrow_id = br.id
                  LEFT JOIN book b ON br.book_id = b.id
         ORDER BY ra.apply_date DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectAllWithCondition" resultMap="WithInfoMap">
+        SELECT ra.*, t.name as teacher_name, b.title as book_title
+        FROM renew_application ra
+                 LEFT JOIN teacher t ON ra.teacher_id = t.id
+                 LEFT JOIN borrow_record br ON ra.borrow_id = br.id
+                 LEFT JOIN book b ON br.book_id = b.id
+        <where>
+            <if test="teacherName != null and teacherName != ''">
+                AND t.name LIKE CONCAT('%', #{teacherName}, '%')
+            </if>
+            <if test="bookTitle != null and bookTitle != ''">
+                AND b.title LIKE CONCAT('%', #{bookTitle}, '%')
+            </if>
+            <if test="status != null">
+                AND ra.status = #{status}
+            </if>
+        </where>
+        ORDER BY ra.apply_date DESC
+        LIMIT #{offset}, #{limit}
     </select>
 
     <select id="countAll" resultType="int">

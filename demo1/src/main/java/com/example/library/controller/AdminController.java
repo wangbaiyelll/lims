@@ -24,33 +24,37 @@ public class AdminController {
 
     @GetMapping("/index")
     public String index() {
-        return "admin/index";  // 简单页面
+        return "admin/index";
     }
-    
-    /**
-     * 库存管理页面
-     */
+
     @GetMapping("/stock-list")
     public String stockList() {
         return "admin/stock-list";
     }
 
-    /**
-     * 获取借阅数据
-     */
+    @GetMapping("/borrow/list")
+    public String borrowList() {
+        return "admin/borrow-list";
+    }
+
+    @GetMapping("/fine/list")
+    public String fineList() {
+        return "admin/fine-list";
+    }
+
     @GetMapping("/borrow/data")
     @ResponseBody
     public Result getBorrowData(@RequestParam(defaultValue = "1") Integer page,
-                                @RequestParam(defaultValue = "10") Integer limit) {
+                                @RequestParam(defaultValue = "10") Integer limit,
+                                @RequestParam(required = false) String teacherName,
+                                @RequestParam(required = false) String bookTitle,
+                                @RequestParam(required = false) Integer status) {
         PageHelper.startPage(page, limit);
-        List<BorrowRecord> list = borrowService.getAllBorrows(page, limit);
+        List<BorrowRecord> list = borrowService.getBorrowsWithCondition(teacherName, bookTitle, status, page, limit);
         PageInfo<BorrowRecord> pageInfo = new PageInfo<>(list);
         return Result.success().put("data", pageInfo.getList()).put("count", pageInfo.getTotal());
     }
 
-    /**
-     * 获取逾期数据
-     */
     @GetMapping("/borrow/overdue")
     @ResponseBody
     public Result getOverdueData(@RequestParam(defaultValue = "1") Integer page,

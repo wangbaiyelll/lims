@@ -4,6 +4,7 @@ import com.example.library.entity.Admin;
 import com.example.library.entity.Teacher;
 import com.example.library.mapper.AdminMapper;
 import com.example.library.mapper.TeacherMapper;
+import com.example.library.service.AdminLogService;
 import com.example.library.service.AuthService;
 import com.example.library.util.BCryptUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +22,30 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private TeacherMapper teacherMapper;
 
+    @Autowired
+    private AdminLogService adminLogService;
+
     @Override
     public Admin adminLogin(String username, String password, HttpSession session) {
         Admin admin = adminMapper.selectByUsername(username);
         if (admin != null && admin.getStatus() == 1) {
-            // 使用BCrypt验证密码
+            // 使用 BCrypt 验证密码
             if (BCryptUtil.matches(password, admin.getPassword())) {
                 admin.setLastLoginTime(new Date());
-                adminMapper.updateLoginTime(admin.getId(), new Date());
+                adminMapper.updateLoginTime(admin.getId().intValue(), new Date());
                 session.setAttribute("loginAdmin", admin);
                 session.setAttribute("userType", "admin");
+                
+                // 记录登录日志
+                adminLogService.logOperation(
+                    admin.getId().intValue(),
+                    admin.getName(),
+                    "登录系统",
+                    "SYSTEM",
+                    null,
+                    "管理员登录"
+                );
+                
                 return admin;
             }
         }

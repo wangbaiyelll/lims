@@ -20,6 +20,7 @@
     <resultMap id="WithInfoMap" type="com.example.library.entity.BorrowRecord" extends="BaseResultMap">
         <result column="teacher_name" property="teacherName"/>
         <result column="book_title" property="bookTitle"/>
+        <result column="author" property="author"/>
         <result column="isbn" property="isbn"/>
         <result column="location_code" property="locationCode"/>
         <result column="overdue_days" property="overdueDays"/>
@@ -37,7 +38,7 @@
     </select>
 
     <select id="selectAll" resultMap="WithInfoMap">
-        SELECT br.*, t.name as teacher_name, b.title as book_title, b.isbn,
+        SELECT br.*, t.name as teacher_name, b.title as book_title, b.author as author, b.isbn,
            DATEDIFF(CURDATE(), br.due_date) as overdue_days
         FROM borrow_record br
              LEFT JOIN teacher t ON br.teacher_id = t.id
@@ -46,7 +47,7 @@
     </select>
 
     <select id="selectByTeacherId" resultMap="WithInfoMap">
-        SELECT br.*, t.name as teacher_name, b.title as book_title, b.isbn,
+        SELECT br.*, t.name as teacher_name, b.title as book_title, b.author as author, b.isbn,
         DATEDIFF(CURDATE(), br.due_date) as overdue_days
         FROM borrow_record br
         LEFT JOIN teacher t ON br.teacher_id = t.id
@@ -64,7 +65,7 @@
     </select>
 
     <select id="selectByCondition" resultMap="WithInfoMap">
-        SELECT br.*, t.name as teacher_name, b.title as book_title, b.isbn
+        SELECT br.*, t.name as teacher_name, b.title as book_title, b.author as author, b.isbn
         FROM borrow_record br
         LEFT JOIN teacher t ON br.teacher_id = t.id
         LEFT JOIN book b ON br.book_id = b.id
@@ -88,6 +89,26 @@
         ORDER BY br.borrow_date DESC
     </select>
 
+    <select id="selectWithCondition" resultMap="WithInfoMap">
+        SELECT br.*, t.name as teacher_name, b.title as book_title, b.author as author, b.isbn,
+               DATEDIFF(CURDATE(), br.due_date) as overdue_days
+        FROM borrow_record br
+        LEFT JOIN teacher t ON br.teacher_id = t.id
+        LEFT JOIN book b ON br.book_id = b.id
+        <where>
+            <if test="teacherName != null and teacherName != ''">
+                AND t.name LIKE CONCAT('%', #{teacherName}, '%')
+            </if>
+            <if test="bookTitle != null and bookTitle != ''">
+                AND b.title LIKE CONCAT('%', #{bookTitle}, '%')
+            </if>
+            <if test="status != null">
+                AND br.status = #{status}
+            </if>
+        </where>
+        ORDER BY br.borrow_date DESC
+    </select>
+
     <select id="countByTeacherId" resultType="int">
         SELECT COUNT(*) FROM borrow_record WHERE teacher_id = #{teacherId}
         <if test="status != null">
@@ -95,8 +116,15 @@
         </if>
     </select>
 
+    <select id="countByTeacherIdAndStatus" resultType="int">
+        SELECT COUNT(*) FROM borrow_record WHERE teacher_id = #{teacherId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
     <select id="selectByBookId" resultMap="WithInfoMap">
-        SELECT br.*, t.name as teacher_name
+        SELECT br.*, t.name as teacher_name, b.author as author
         FROM borrow_record br
                  LEFT JOIN teacher t ON br.teacher_id = t.id
         WHERE br.book_id = #{bookId} AND br.status IN (1, 3)
@@ -104,16 +132,18 @@
 
     <select id="selectOverdueList" resultMap="WithInfoMap">
         SELECT br.*, t.name as teacher_name, t.email, t.phone,
-               b.title as book_title,
+               b.title as book_title, b.author as author,
                DATEDIFF(CURDATE(), br.due_date) as overdue_days
         FROM borrow_record br
                  LEFT JOIN teacher t ON br.teacher_id = t.id
                  LEFT JOIN book b ON br.book_id = b.id
-        WHERE br.status = 1 AND br.due_date <![CDATA[ < ]]> CURDATE()
+        WHERE (br.status = 1 OR br.status = 3)
+          AND br.due_date <![CDATA[ < ]]> CURDATE()
+          AND br.return_date IS NULL
     </select>
 
     <select id="selectDueSoon" resultMap="WithInfoMap">
-        SELECT br.*, t.name as teacher_name, b.title as book_title, b.isbn,
+        SELECT br.*, t.name as teacher_name, b.title as book_title, b.author as author, b.isbn,
                DATEDIFF(CURDATE(), br.due_date) as overdue_days
         FROM borrow_record br
                  LEFT JOIN teacher t ON br.teacher_id = t.id

@@ -42,7 +42,9 @@
     </insert>
 
     <update id="updateStatus">
-        UPDATE message SET status = #{status}, read_time = NOW() WHERE id = #{id}
+        UPDATE message
+        SET status = #{status}
+        WHERE id = #{id}
     </update>
 
     <delete id="deleteById">

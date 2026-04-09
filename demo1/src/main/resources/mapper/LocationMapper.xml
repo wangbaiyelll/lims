@@ -19,11 +19,15 @@
     </select>
 
     <select id="selectByCode" resultMap="BaseResultMap">
-        SELECT * FROM location WHERE position_code = #{positionCode}
+        SELECT * FROM location WHERE position_code = #{code}
     </select>
 
     <select id="selectAll" resultMap="BaseResultMap">
-        SELECT * FROM location WHERE status = 1 ORDER BY library_name, shelf_no
+        SELECT * FROM location ORDER BY id DESC
+    </select>
+
+    <select id="selectAllLibraries" resultType="java.lang.String">
+        SELECT DISTINCT library_name FROM location ORDER BY library_name
     </select>
 
     <select id="selectByLibrary" resultMap="BaseResultMap">

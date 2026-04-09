@@ -24,4 +24,5 @@ public class Book {
     private Integer availableQty;
     private Integer totalQty;
     private String borrowStatus;
+    private Integer borrowCount;
 }

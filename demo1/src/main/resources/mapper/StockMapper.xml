@@ -53,11 +53,24 @@
         FROM stock s
                  LEFT JOIN book b ON s.book_id = b.id
                  LEFT JOIN location l ON s.location_id = l.id
+        <where>
+            <if test="bookTitle != null and bookTitle != ''">
+                AND b.title LIKE CONCAT('%', #{bookTitle}, '%')
+            </if>
+        </where>
         ORDER BY s.id DESC
+        LIMIT #{offset}, #{limit}
     </select>
 
     <select id="countAll" resultType="int">
-        SELECT COUNT(*) FROM stock
+        SELECT COUNT(*) FROM stock s
+                 LEFT JOIN book b ON s.book_id = b.id
+                 LEFT JOIN location l ON s.location_id = l.id
+        <where>
+            <if test="bookTitle != null and bookTitle != ''">
+                AND b.title LIKE CONCAT('%', #{bookTitle}, '%')
+            </if>
+        </where>
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">

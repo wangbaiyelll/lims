@@ -17,5 +17,7 @@ public interface MessageService {
 
     boolean markAsRead(Long id, Integer teacherId);
 
+    int markAllAsReadBatch(Integer teacherId);
+
     boolean delete(Long id);
 }

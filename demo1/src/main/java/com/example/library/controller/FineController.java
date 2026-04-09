@@ -1,7 +1,9 @@
 package com.example.library.controller;
 
+import com.example.library.entity.BorrowRecord;
 import com.example.library.entity.Fine;
 import com.example.library.entity.Teacher;
+import com.example.library.mapper.BorrowRecordMapper;
 import com.example.library.service.FineService;
 import com.example.library.util.Result;
 import com.github.pagehelper.PageHelper;
@@ -19,6 +21,9 @@ public class FineController {
 
     @Autowired
     private FineService fineService;
+    
+    @Autowired
+    private BorrowRecordMapper borrowRecordMapper;
 
     @GetMapping("/list")
     public String listPage() {
@@ -29,23 +34,65 @@ public class FineController {
     @ResponseBody
     public Result getFineList(@RequestParam(defaultValue = "1") Integer page,
                               @RequestParam(defaultValue = "10") Integer limit,
-                              String teacherName, Integer status) {
-        PageHelper.startPage(page, limit);
+                              @RequestParam(required = false) String teacherName,
+                              @RequestParam(required = false) Integer status) {
+        // 处理空字符串，转换为 null
+        if (teacherName != null && teacherName.trim().isEmpty()) {
+            teacherName = null;
+        }
+        
         List<Fine> list = fineService.getByCondition(teacherName, status, page, limit);
-        PageInfo<Fine> pageInfo = new PageInfo<>(list);
-        return Result.success().put("data", pageInfo.getList()).put("count", pageInfo.getTotal());
+        
+        // 获取总数（用于分页）
+        int count = fineService.getCount(teacherName, status);
+        
+        return Result.success().put("data", list).put("count", count);
     }
 
     @GetMapping("/my")
     @ResponseBody
-    public Result getMyFines(HttpSession session) {
+    public Result getMyFines(HttpSession session,
+                             @RequestParam(defaultValue = "1") Integer page,
+                             @RequestParam(defaultValue = "10") Integer limit,
+                             @RequestParam(required = false) Integer status) {
         Teacher teacher = (Teacher) session.getAttribute("loginTeacher");
         if (teacher == null) {
             return Result.error("请先登录");
         }
 
-        List<Fine> list = fineService.getByTeacherId(teacher.getId(), null);
-        return Result.success().put("data", list);
+        System.out.println("🔍 [罚款查询] 教师 ID: " + teacher.getId() + ", 姓名：" + teacher.getName() + 
+                         ", 状态过滤：" + (status == null ? "全部" : status));
+
+        // 使用分页查询 - 如果 status 为 null，则查询所有状态
+        List<Fine> list = fineService.getByTeacherIdWithPagination(teacher.getId(), status, page, limit);
+        
+        // 获取总数
+        int totalCount = fineService.countByTeacherId(teacher.getId(), null); // 查询所有状态的总数
+        
+        System.out.println("📊 [罚款查询] 找到 " + list.size() + " 条记录，总计：" + totalCount + " 条");
+        
+        // 打印每条记录的信息
+        if (list != null && !list.isEmpty()) {
+            for (Fine fine : list) {
+                System.out.println("  💰 罚款 ID: " + fine.getId() + 
+                                 ", 借阅 ID: " + fine.getBorrowId() + 
+                                 ", 金额：" + fine.getAmount() + 
+                                 ", 状态：" + fine.getStatus() + 
+                                 ", 图书：《" + fine.getBookTitle() + "》");
+            }
+        } else {
+            System.out.println("⚠️ [罚款查询] 没有找到任何罚款记录");
+            
+            // 检查该教师是否有逾期未还的图书
+            List<BorrowRecord> overdueRecords = borrowRecordMapper.selectByTeacherId(teacher.getId(), 3, 0, 100);
+            if (overdueRecords != null && !overdueRecords.isEmpty()) {
+                System.out.println("❗ [罚款查询] 发现 " + overdueRecords.size() + " 条逾期图书记录，但未生成罚款");
+            }
+        }
+        
+        return Result.success()
+                .put("data", list)
+                .put("count", totalCount);
     }
 
     @PostMapping("/pay/{id}")

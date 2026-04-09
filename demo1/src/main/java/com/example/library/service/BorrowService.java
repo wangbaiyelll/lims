@@ -21,17 +21,24 @@ public interface BorrowService {
 
     List<RenewApplication> getRenewApplications(Integer page, Integer size);
 
+    List<RenewApplication> getRenewApplicationsWithCondition(String teacherName, String bookTitle, Integer status);
+
+    RenewApplication getPendingRenewApplication(Long borrowId);
+
+    RenewApplication getRecentRenewApplication(Long borrowId);
+
     int getRenewCount();
 
     boolean auditRenew(Long id, Integer status, Integer adminId, String remark);
 
-    /**
-     * 获取所有借阅记录（分页）
-     */
     List<BorrowRecord> getAllBorrows(Integer page, Integer size);
 
-    /**
-     * 获取逾期借阅记录
-     */
     List<BorrowRecord> getOverdueList();
+
+    List<BorrowRecord> getBorrowsWithCondition(String teacherName, String bookTitle, Integer status, Integer page, Integer size);
+
+    List<RenewApplication> getApplicationsByBorrowIds(List<Long> borrowIds);
+    
+    int countByTeacherIdAndStatus(Integer teacherId, Integer status);
+
 }

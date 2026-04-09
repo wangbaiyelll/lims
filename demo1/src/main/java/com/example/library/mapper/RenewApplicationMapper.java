@@ -12,7 +12,20 @@ public interface RenewApplicationMapper {
 
     List<RenewApplication> selectByStatus(@Param("status") Integer status);
 
-    List<RenewApplication> selectAll(@Param("offset") Integer offset, @Param("limit") Integer limit);
+    RenewApplication selectByBorrowIdAndStatus(@Param("borrowId") Long borrowId, @Param("status") Integer status);
+
+    List<RenewApplication> selectByBorrowId(@Param("borrowId") Long borrowId);
+
+    List<RenewApplication> selectByBorrowIds(@Param("borrowIds") List<Long> borrowIds);
+
+    List<RenewApplication> selectAll(@Param("offset") int offset, @Param("size") Integer size);
+
+    // 添加带查询条件的方法
+    List<RenewApplication> selectAllWithCondition(@Param("offset") int offset,
+                                                 @Param("limit") Integer limit,
+                                                 @Param("teacherName") String teacherName,
+                                                 @Param("bookTitle") String bookTitle,
+                                                 @Param("status") Integer status);
 
     int countAll();
 

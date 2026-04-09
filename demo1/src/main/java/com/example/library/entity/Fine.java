@@ -12,7 +12,7 @@ public class Fine {
     private BigDecimal amount;
     private Date fineDate;
     private Integer dueDays;
-    private Integer status;  // 0未支付 1已支付
+    private Integer status;  // 0:待支付 (已还书) 1:已支付 2:待归还 (未还书)
     private Date payDate;
     private String remark;
     private Date createTime;
@@ -21,4 +21,6 @@ public class Fine {
     // 非数据库字段
     private String teacherName;
     private String bookTitle;
+    private BigDecimal bookPrice;
+    private Boolean canPay; // 是否可以支付
 }

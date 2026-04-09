@@ -1,5 +1,6 @@
 package com.example.library.service.impl;
 
+import com.example.library.entity.Book;
 import com.example.library.entity.BorrowRecord;
 import com.example.library.mapper.BookMapper;
 import com.example.library.mapper.BorrowRecordMapper;
@@ -107,9 +108,22 @@ public class DashboardServiceImpl implements DashboardService {
                         borrowCountMap.getOrDefault(record.getBookId(), 0) + 1);
             }
 
-            // 转换为列表并排序
+            // 转换为列表并排序（优先按借阅次数，次数相同按价格排序）
             List<Map.Entry<Integer, Integer>> sorted = borrowCountMap.entrySet().stream()
-                    .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
+                    .sorted((a, b) -> {
+                        // 先按借阅次数降序
+                        int countCompare = b.getValue().compareTo(a.getValue());
+                        if (countCompare != 0) {
+                            return countCompare;
+                        }
+                        // 次数相同，按价格降序
+                        Book bookA = bookMapper.selectById(a.getKey());
+                        Book bookB = bookMapper.selectById(b.getKey());
+                        if (bookA != null && bookB != null && bookA.getPrice() != null && bookB.getPrice() != null) {
+                            return bookB.getPrice().compareTo(bookA.getPrice());
+                        }
+                        return 0;
+                    })
                     .limit(limit)
                     .collect(Collectors.toList());
 

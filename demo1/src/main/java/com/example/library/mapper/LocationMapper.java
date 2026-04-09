@@ -6,16 +6,15 @@ import java.util.List;
 
 public interface LocationMapper {
 
-    Location selectById(@Param("id") Integer id);
+    Location selectById(Integer id);
 
-    Location selectByCode(@Param("positionCode") String positionCode);
+    Location selectByCode(String code);
 
     List<Location> selectAll();
 
-    List<Location> selectByLibrary(@Param("libraryName") String libraryName);
-
-    // 添加这个方法
     List<String> selectAllLibraries();
+
+    List<Location> selectByLibrary(String libraryName);
 
     int insert(Location location);
 
@@ -23,5 +22,5 @@ public interface LocationMapper {
 
     int updateStatus(@Param("id") Integer id, @Param("status") Integer status);
 
-    int deleteById(@Param("id") Integer id);
+    int deleteById(Integer id);
 }

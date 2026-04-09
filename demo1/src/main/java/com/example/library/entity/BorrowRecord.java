@@ -20,7 +20,12 @@ public class BorrowRecord {
     // 非数据库字段
     private String teacherName;
     private String bookTitle;
+    private String author;
     private String isbn;
     private String locationCode;
     private Integer overdueDays;
+    private Boolean hasPendingRenewal;
+    private Integer renewalStatus;
+    private String renewalRemark;
+    private Date renewalAuditDate;
 }

@@ -26,6 +26,11 @@
         ORDER BY create_time DESC
     </select>
 
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM admin_log
+        ORDER BY create_time DESC
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO admin_log (admin_id, admin_name, operation, target_type, target_id, target_name)
         VALUES (#{adminId}, #{adminName}, #{operation}, #{targetType}, #{targetId}, #{targetName})

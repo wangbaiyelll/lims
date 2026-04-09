@@ -14,9 +14,7 @@ public interface TeacherMapper {
 
     List<Teacher> selectByCondition(@Param("keyword") String keyword,
                                     @Param("college") String college,
-                                    @Param("status") Integer status,
-                                    @Param("offset") Integer offset,
-                                    @Param("limit") Integer limit);
+                                    @Param("status") Integer status);
 
     int countByCondition(@Param("keyword") String keyword,
                          @Param("college") String college,

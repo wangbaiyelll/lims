@@ -7,13 +7,13 @@ public interface LocationService {
 
     Location getById(Integer id);
 
-    Location getByCode(String positionCode);
+    Location getByCode(String code);
 
     List<Location> getAll();
 
-    List<Location> getByLibrary(String libraryName);
-
     List<String> getAllLibraries();
+
+    List<Location> getByLibrary(String libraryName);
 
     boolean add(Location location);
 

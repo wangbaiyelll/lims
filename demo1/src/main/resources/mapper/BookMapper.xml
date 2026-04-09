@@ -22,6 +22,7 @@
         <result column="category_name" property="categoryName"/>
         <result column="available_qty" property="availableQty"/>
         <result column="total_qty" property="totalQty"/>
+        <result column="borrow_count" property="borrowCount"/>
     </resultMap>
 
     <select id="selectById" resultMap="WithStockMap">
@@ -39,7 +40,6 @@
         SELECT * FROM book WHERE isbn = #{isbn}
     </select>
 
-    <!-- ... existing code ... -->
     <select id="selectByCondition" resultMap="WithStockMap">
         SELECT b.*, c.name as category_name,
         COALESCE(SUM(s.available_qty), 0) as available_qty,
@@ -71,33 +71,43 @@
 
     <select id="selectPopular" resultMap="WithStockMap">
         SELECT b.*, c.name as category_name,
+               COALESCE(MAX(s.available_qty), 0) as available_qty,
+               COALESCE(SUM(s.total_qty), 0) as total_qty,
                COUNT(br.id) as borrow_count
         FROM book b
-                 LEFT JOIN category c ON b.category_id = c.id
-                 LEFT JOIN borrow_record br ON b.id = br.book_id
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN stock s ON b.id = s.book_id
+        LEFT JOIN borrow_record br ON b.id = br.book_id
         WHERE b.status = 1
-        GROUP BY b.id
+        GROUP BY b.id, c.name
         ORDER BY borrow_count DESC
+        LIMIT #{limit}
     </select>
 
     <select id="selectRecommendByTeacher" resultMap="WithStockMap">
         SELECT b.*, c.name as category_name,
-               '基于借阅历史推荐' as recommend_reason
+               COALESCE(MAX(s.available_qty), 0) as available_qty,
+               COALESCE(SUM(s.total_qty), 0) as total_qty
         FROM book b
-                 LEFT JOIN category c ON b.category_id = c.id
-        WHERE b.status = 1
-          AND b.category_id IN (
-            SELECT DISTINCT category_id
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN stock s ON b.id = s.book_id
+        INNER JOIN (
+            SELECT DISTINCT bk.category_id
             FROM borrow_record br
-                     JOIN book bk ON br.book_id = bk.id
+            INNER JOIN book bk ON br.book_id = bk.id
             WHERE br.teacher_id = #{teacherId}
-        )
-          AND b.id NOT IN (
-            SELECT book_id FROM borrow_record WHERE teacher_id = #{teacherId}
-        )
+        ) user_cats ON b.category_id = user_cats.category_id
+        LEFT JOIN (
+            SELECT DISTINCT book_id
+            FROM borrow_record
+            WHERE teacher_id = #{teacherId}
+        ) borrowed ON b.id = borrowed.book_id
+        WHERE b.status = 1
+          AND borrowed.book_id IS NULL
+        GROUP BY b.id, c.name
+        ORDER BY b.create_time DESC
+        LIMIT #{limit}
     </select>
-    <!-- ... existing code ... -->
-
 
     <select id="countByCondition" resultType="int">
         SELECT COUNT(DISTINCT b.id)

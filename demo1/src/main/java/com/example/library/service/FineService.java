@@ -8,6 +8,10 @@ public interface FineService {
     Fine getById(Long id);
 
     List<Fine> getByTeacherId(Integer teacherId, Integer status);
+    
+    List<Fine> getByTeacherIdWithPagination(Integer teacherId, Integer status, Integer page, Integer size);
+    
+    int countByTeacherId(Integer teacherId, Integer status);
 
     List<Fine> getByCondition(String teacherName, Integer status, Integer page, Integer size);
 

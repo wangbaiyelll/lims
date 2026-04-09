@@ -16,12 +16,22 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
+    // ... existing code ...
     @GetMapping("/list")
     @ResponseBody
     public Result getCategoryList() {
         List<Category> list = categoryService.getAll();
         return Result.success().put("data", list);
     }
+
+    @GetMapping("/data")  // 添加这个兼容的API端点
+    @ResponseBody
+    public Result getCategoryData() {
+        List<Category> list = categoryService.getAll();
+        return Result.success().put("data", list);
+    }
+// ... existing code ...
+
 
     @GetMapping("/level1")
     @ResponseBody

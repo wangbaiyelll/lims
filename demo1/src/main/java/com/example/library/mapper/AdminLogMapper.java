@@ -11,5 +11,7 @@ public interface AdminLogMapper {
     List<AdminLog> selectByTarget(@Param("targetType") String targetType,
                                   @Param("targetId") Integer targetId);
 
+    List<AdminLog> selectAll();
+
     int insert(AdminLog log);
 }

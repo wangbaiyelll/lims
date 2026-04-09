@@ -35,8 +35,7 @@ public class TeacherServiceImpl implements TeacherService {
     @Override
     public List<Teacher> getByCondition(String keyword, String college, Integer status,
                                         Integer page, Integer size) {
-        int offset = (page - 1) * size;
-        return teacherMapper.selectByCondition(keyword, college, status, offset, size);
+        return teacherMapper.selectByCondition(keyword, college, status);
     }
 
     @Override
