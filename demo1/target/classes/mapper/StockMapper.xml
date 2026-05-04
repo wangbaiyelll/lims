@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.library.mapper.StockMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.library.entity.Stock">
+        <id column="id" property="id"/>
+        <result column="book_id" property="bookId"/>
+        <result column="location_id" property="locationId"/>
+        <result column="total_qty" property="totalQty"/>
+        <result column="available_qty" property="availableQty"/>
+        <result column="status" property="status"/>
+        <result column="last_in_date" property="lastInDate"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <resultMap id="WithInfoMap" type="com.example.library.entity.Stock" extends="BaseResultMap">
+        <result column="book_title" property="bookTitle"/>
+        <result column="location_code" property="locationCode"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="WithInfoMap">
+        SELECT s.*, b.title as book_title, l.position_code as location_code
+        FROM stock s
+                 LEFT JOIN book b ON s.book_id = b.id
+                 LEFT JOIN location l ON s.location_id = l.id
+        WHERE s.id = #{id}
+    </select>
+
+    <select id="selectByBookAndLocation" resultMap="BaseResultMap">
+        SELECT * FROM stock WHERE book_id = #{bookId} AND location_id = #{locationId}
+    </select>
+
+    <select id="selectByBookId" resultMap="WithInfoMap">
+        SELECT s.*, b.title as book_title, l.position_code as location_code
+        FROM stock s
+                 LEFT JOIN book b ON s.book_id = b.id
+                 LEFT JOIN location l ON s.location_id = l.id
+        WHERE s.book_id = #{bookId}
+    </select>
+
+    <select id="selectByLocationId" resultMap="WithInfoMap">
+        SELECT s.*, b.title as book_title, l.position_code as location_code
+        FROM stock s
+                 LEFT JOIN book b ON s.book_id = b.id
+                 LEFT JOIN location l ON s.location_id = l.id
+        WHERE s.location_id = #{locationId}
+    </select>
+
+    <select id="selectAll" resultMap="WithInfoMap">
+        SELECT s.*, b.title as book_title, l.position_code as location_code
+        FROM stock s
+                 LEFT JOIN book b ON s.book_id = b.id
+                 LEFT JOIN location l ON s.location_id = l.id
+        <where>
+            <if test="bookTitle != null and bookTitle != ''">
+                AND b.title LIKE CONCAT('%', #{bookTitle}, '%')
+            </if>
+        </where>
+        ORDER BY s.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM stock s
+                 LEFT JOIN book b ON s.book_id = b.id
+                 LEFT JOIN location l ON s.location_id = l.id
+        <where>
+            <if test="bookTitle != null and bookTitle != ''">
+                AND b.title LIKE CONCAT('%', #{bookTitle}, '%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stock (book_id, location_id, total_qty, available_qty, last_in_date)
+        VALUES (#{bookId}, #{locationId}, #{totalQty}, #{availableQty}, #{lastInDate})
+    </insert>
+
+    <update id="update">
+        UPDATE stock
+        <set>
+            <if test="totalQty != null">total_qty = #{totalQty},</if>
+            <if test="availableQty != null">available_qty = #{availableQty},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="lastInDate != null">last_in_date = #{lastInDate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateAvailableQty">
+        UPDATE stock SET available_qty = available_qty + #{change} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM stock WHERE id = #{id}
+    </delete>
+
+</mapper>
